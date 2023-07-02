@@ -12,7 +12,7 @@ from datetime import datetime
 
 import avro.io
 import avro.schema
-import certifi
+import certifi # to securely connect to salesforce server
 import grpc
 import requests
 
@@ -40,7 +40,7 @@ class PubSub(object):
     """
 
     json_schema_dict = {}
-
+    # constructor , recommendation is to OAuth Flow for production implementations
     def __init__(self, argument_dict):
         self.url = get_argument('url', argument_dict)
         self.username = get_argument('username', argument_dict)
