@@ -4,6 +4,7 @@ PubSub.py
 This file defines the class `PubSub`, which contains common functionality for
 both publisher and subscriber clients.
 """
+#video reference https://www.youtube.com/watch?v=8HmrDN9OUCg
 
 import io
 import threading
