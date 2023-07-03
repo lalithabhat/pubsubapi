@@ -38,3 +38,11 @@ The proto file for the API can be found [here](https://github.com/developerforce
 This example uses Python features that require Python version 3.10 or later, such as the `match` statement. 
 
 To build a working client example in Python please follow [the Python Quick Start Guide.](https://developer.salesforce.com/docs/platform/pub-sub-api/guide/qs-python-quick-start.html)
+
+# Edits made to get it working
+changed the way the command line args are input from the original code. ClientUtil library is not found anywhere
+to start the program 
+python .\SalesforceListener.py 'username=sforguser password=password+token url=https://login.salesforce.com grpcHost=api.pubsub.salesforce.com grpcPort=443'
+subscribed to account change event. topic url updated to data/AccountChangeEvent
+moved everything from inventory app folder to the python folder, its looking for the stubs in the same folder as the main program
+
