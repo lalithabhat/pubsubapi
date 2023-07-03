@@ -20,9 +20,9 @@ import requests
 import pubsub_api_pb2 as pb2
 import pubsub_api_pb2_grpc as pb2_grpc
 from urllib.parse import urlparse
-from utils.ClientUtil import load_properties
+#from utils.ClientUtil import load_properties
 
-properties = load_properties("../resources/application.properties")
+#properties = load_properties("../resources/application.properties")
 
 with open(certifi.where(), 'rb') as f:
     secure_channel_credentials = grpc.ssl_channel_credentials(f.read())
@@ -31,7 +31,7 @@ with open(certifi.where(), 'rb') as f:
 def get_argument(key, argument_dict):
     if key in argument_dict.keys():
         return argument_dict[key]
-    else:
+ #   else:
         return properties.get(key)
 
 
@@ -108,6 +108,7 @@ class PubSub(object):
         self.metadata = (('accesstoken', self.session_id),
                          ('instanceurl', self.url),
                          ('tenantid', self.tenant_id))
+        print(self.metadata)
 
     def release_subscription_semaphore(self):
         """
@@ -228,6 +229,7 @@ class PubSub(object):
         sub_stream = self.stub.Subscribe(self.fetch_req_stream(topic, replay_type, replay_id, num_requested), metadata=self.metadata)
         print("> Subscribed to", topic)
         for event in sub_stream:
+            print(event)
             callback(event, self)
 
     def publish(self, topic_name, schema, schema_id):

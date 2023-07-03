@@ -18,7 +18,7 @@ import logging
 
 from PubSub import PubSub
 import pubsub_api_pb2 as pb2
-from utils.ClientUtil import command_line_input
+from utils import command_line_input
 import time
 from util.ChangeEventHeaderUtility import process_bitmap
 

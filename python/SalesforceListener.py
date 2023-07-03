@@ -20,7 +20,7 @@ import requests
 import time
 
 from PubSub import PubSub
-from utils.ClientUtil import command_line_input
+import sys
 
 
 def process_confirmation(event, pubsub):
@@ -47,28 +47,36 @@ def process_confirmation(event, pubsub):
             json_schema = pubsub.get_schema_json(evt.event.schema_id)
             decoded_event = pubsub.decode(json_schema, payload_bytes)
             # print(decoded_event)
+        
+            json_object =decoded_event
+            print(json.dumps(json_object, indent = 3))
             #  A change event contains the ChangeEventHeader field. Check if received event is a change event. 
             if 'ChangeEventHeader' in decoded_event:
                 # Decode the bitmap fields contained within the ChangeEventHeader. For example, decode the 'changedFields' field.
                 # An example to process bitmap in 'changedFields'
                 changed_fields = decoded_event['ChangeEventHeader']['changedFields']
-                print("Change Type: " + decoded_event['ChangeEventHeader']['changeType'])
-                print("=========== Changed Fields =============")
+                accountRecId = decoded_event['ChangeEventHeader']['recordIds'][0]
+                accountName = decoded_event['Name']
+                print("Change Type: " + decoded_event['ChangeEventHeader']['changeType'] + "Account Id:" +accountRecId )
+                #print("=========== Changed Fields =============")
                 print(process_bitmap(avro.schema.parse(json_schema), changed_fields))
-                print("=========================================")
-            print("> Received order confirmation! Updating estimated delivery date...")
+                #print("=========================================")
+            # print("> Received account change confirmation! Updating SLA exp date..." , evt)
             if __debug__:
                 time.sleep(2)
-            # Update the Desription field of the opportunity with the estimated delivery date with a REST request
-            day = datetime.fromtimestamp(decoded_event['EstimatedDeliveryDate__c']).strftime('%Y-%m-%d')
-            res = requests.patch(pubsub.url + "/services/data/v" + pubsub.apiVersion + "/sobjects/Opportunity/"
-                                 + decoded_event['OpptyRecordId__c'], json.dumps({"Description": "Estimated Delivery Date: " + day}),
-                                 headers={"Authorization": "Bearer " + pubsub.session_id,
-                                          "Content-Type": "application/json",
-                                          "Sforce-Call-Options": "client=SalesforceListener"})
-            print("  Done!", res)
+            # Update the Desription field of the account with the SLA expiration date with a REST request
+            today = datetime.now()
+
+            print(today)
+            # day = today.strftime("%d/%m/%Y")
+            # res = requests.patch(pubsub.url + "/services/data/v" + pubsub.apiVersion + "/sobjects/Account/"
+            #                      + accountRecId, json.dumps({"Site":"Test"}),
+            #                      headers={"Authorization": "Bearer " + pubsub.session_id,
+            #                               "Content-Type": "application/json",
+            #                               "Sforce-Call-Options": "client=SalesforceListener"})
+            # print("  Done!", res)
     else:
-        print("[", time.strftime('%b %d, %Y %l:%M%p %Z'), "] The subscription is active.")
+        print("[", time.strftime("%m-%d-%Y %H:%M%p"), "] The subscription is active.")
 
     # The replay_id is used to resubscribe after this position in the stream if the client disconnects.
     # Implement storage of replay for resubscribe!!!
@@ -78,11 +86,13 @@ def run(argument_dict):
     sfdc_updater = PubSub(argument_dict)
     sfdc_updater.auth()
 
-    # Subscribe to /event/NewOrderConfirmation__e events
-    sfdc_updater.subscribe('/event/NewOrderConfirmation__e', "LATEST", "", 1, process_confirmation)
+    # Subscribe to /event/AccountChangeEvent events
+    sfdc_updater.subscribe('/data/AccountChangeEvent', "LATEST", "", 1, process_confirmation)
 
 
 if __name__ == '__main__':
-    argument_dict = command_line_input(sys.argv[1:])
+    argument_dict = sys.argv[1]
+    argument_dict = dict( pair.split('=') for pair in argument_dict.split(' ') )
+    print(argument_dict)
     logging.basicConfig()
     run(argument_dict)
